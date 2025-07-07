@@ -16,13 +16,17 @@ def publish_new_post(title, content, tags, token, publication_id):
     }
 
     # Step 1: Create Draft
+    # Step 1: Create Draft
     create_draft_query = """
-    mutation CreateDraft($input: CreateDraftInput!) {
-      createDraft(input: $input) {
-        id
-      }
+         mutation CreateDraft($input: CreateDraftInput!) {
+        createDraft(input: $input) {
+        draft {
+         id
     }
-    """
+  }
+}
+"""
+
 
     variables = {
         "input": {
@@ -43,7 +47,8 @@ def publish_new_post(title, content, tags, token, publication_id):
         print("❌ Failed to create draft:", result['errors'])
         return None
 
-    draft_id = result['data']['createDraft']['id']
+    draft_id = result['data']['createDraft']['draft']['id']
+
     print("📝 Draft created:", draft_id)
 
     # Step 2: Publish the Draft

@@ -141,21 +141,25 @@ def update_existing_post(post_id, title, content, tags, token):
     }
 
     update_query = """
-    mutation UpdatePost($input: UpdatePostInput!) {
-      updatePost(input: $input) {
-        id
-      }
+mutation UpdatePost($input: UpdatePostInput!) {
+  updatePost(input: $input) {
+    post {
+      id
     }
-    """
+  }
+}
+"""
+
 
     variables = {
-        "input": {
-            "postId": post_id,
-            "title": title,
-            "contentMarkdown": content,
-            "tags": [{"name": tag, "slug": tag.lower().replace(" ", "-")} for tag in tags]
-        }
+    "input": {
+        "id": post_id,  # 🔁 duplicate as required
+        "title": title,
+        "contentMarkdown": content,
+        "tags": [{"name": tag, "slug": tag.lower().replace(" ", "-")} for tag in tags]
     }
+}
+
 
     response = requests.post(HASHNODE_API_URL, headers=headers, json={
         "query": update_query,
@@ -167,7 +171,7 @@ def update_existing_post(post_id, title, content, tags, token):
         print("❌ Failed to update post:", result['errors'])
         return False
 
-    print("✅ Post updated successfully:", result['data']['updatePost']['id'])
+    print("✅ Post updated successfully:", result['data']['updatePost']['post']['id'])
     return True
 
 

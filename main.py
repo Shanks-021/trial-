@@ -9,47 +9,70 @@ import requests
 
 HASHNODE_API_URL = "https://gql.hashnode.com/"
 
-def publish_new_post(title, content, tags, token):
+def publish_new_post(title, content, tags, token, publication_id):
     headers = {
         "Content-Type": "application/json",
         "Authorization": token
     }
 
-    # GraphQL mutation
-    query = """
-    mutation CreateStory($input: CreateStoryInput!) {
-      createStory(input: $input) {
-        post {
-          _id
-          title
-        }
+    # Step 1: Create Draft
+    create_draft_query = """
+    mutation CreateDraft($input: CreateDraftInput!) {
+      createDraft(input: $input) {
+        id
       }
     }
     """
 
-    # Replace this with your real publication ID
-    publication_id = "68698ae9adb6b7f95bf6d40f"  # we'll fetch this in the next step
     variables = {
         "input": {
             "title": title,
             "contentMarkdown": content,
-            "tags": [{"_id": t} for t in tags],
+            "tags": tags,
             "publicationId": publication_id
         }
     }
 
     response = requests.post(HASHNODE_API_URL, headers=headers, json={
-        "query": query,
+        "query": create_draft_query,
         "variables": variables
     })
 
     result = response.json()
     if 'errors' in result:
-        print("❌ Failed to publish post:", result['errors'])
+        print("❌ Failed to create draft:", result['errors'])
         return None
-    post_id = result['data']['createStory']['post']['_id']
+
+    draft_id = result['data']['createDraft']['id']
+    print("📝 Draft created:", draft_id)
+
+    # Step 2: Publish the Draft
+    publish_query = """
+    mutation PublishDraft($id: ID!) {
+      publishDraft(id: $id) {
+        post {
+          id
+        }
+      }
+    }
+    """
+
+    publish_response = requests.post(HASHNODE_API_URL, headers=headers, json={
+        "query": publish_query,
+        "variables": {
+            "id": draft_id
+        }
+    })
+
+    publish_result = publish_response.json()
+    if 'errors' in publish_result:
+        print("❌ Failed to publish draft:", publish_result['errors'])
+        return None
+
+    post_id = publish_result['data']['publishDraft']['post']['id']
     print("✅ Post published with ID:", post_id)
     return post_id
+
 
 # Load the JSON mapping file
 def load_mapping(mapping_path='hashnode-mapping.json'):
@@ -126,11 +149,13 @@ if __name__ == "__main__":
 
             # Call publish function
             new_post_id = publish_new_post(
-                title=blog_data['title'],
-                content=blog_data['content'],
-                tags=blog_data['tags'],
-                token=HASHNODE_TOKEN
-            )
+    title=blog_data['title'],
+    content=blog_data['content'],
+    tags=blog_data['tags'],
+    token=HASHNODE_TOKEN,
+    publication_id=PUBLICATION_ID
+)
+
 
             # Save post ID
             if new_post_id:

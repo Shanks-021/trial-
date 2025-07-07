@@ -182,6 +182,8 @@ if __name__ == "__main__":
     # PUBLICATION_ID = "68698ae9adb6b7f95bf6d40f"
     HASHNODE_TOKEN = os.environ["HASHNODE_TOKEN"]
     PUBLICATION_ID = os.environ["PUBLICATION_ID"]
+    print(" HASHNODE_TOKEN =", os.environ.get("HASHNODE_TOKEN"))
+
 
 
     files = get_changed_files()

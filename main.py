@@ -193,30 +193,24 @@ if __name__ == "__main__":
         print("→ Tags:", blog_data['tags'])
 
         if post_id:
-            
             print("🟡 Post already exists → updating...")
-
-        updated = update_existing_post(
-        post_id=post_id,
-        title=blog_data['title'],
-        content=blog_data['content'],
-        tags=blog_data['tags'],
-        token=HASHNODE_TOKEN
-    )
-    else:
+            updated = update_existing_post(
+                post_id=post_id,
+                title=blog_data['title'],
+                content=blog_data['content'],
+                tags=blog_data['tags'],
+                token=HASHNODE_TOKEN
+            )
+        else:
             print("🟢 New post → publishing to Hashnode...")
-
-            # Call publish function
             new_post_id = publish_new_post(
-            title=blog_data['title'],
-            content=blog_data['content'],
-            tags=blog_data['tags'],
-            token=HASHNODE_TOKEN,
-            publication_id=PUBLICATION_ID
-)
+                title=blog_data['title'],
+                content=blog_data['content'],
+                tags=blog_data['tags'],
+                token=HASHNODE_TOKEN,
+                publication_id=PUBLICATION_ID
+            )
 
-
-            # Save post ID
             if new_post_id:
                 mapping[f] = new_post_id
                 save_mapping(mapping)

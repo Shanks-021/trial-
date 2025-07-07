@@ -1,9 +1,6 @@
-
 ---
 title: My Second Blog
-tags:
-  - python
-  - productivity
+tags: [python, automation]
 ---
-
-This is my second blog post, managed entirely from GitHub!
+This is my seco Hashnode blog post, published via GitHub Actions! 
+checking fro update  . ting ting 

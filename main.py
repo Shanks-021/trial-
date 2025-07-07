@@ -149,11 +149,11 @@ if __name__ == "__main__":
 
             # Call publish function
             new_post_id = publish_new_post(
-    title=blog_data['title'],
-    content=blog_data['content'],
-    tags=blog_data['tags'],
-    token=HASHNODE_TOKEN,
-    publication_id=PUBLICATION_ID
+            title=blog_data['title'],
+            content=blog_data['content'],
+            tags=blog_data['tags'],
+            token=HASHNODE_TOKEN,
+            publication_id=PUBLICATION_ID
 )
 
 

@@ -29,13 +29,15 @@ def publish_new_post(title, content, tags, token, publication_id):
 
 
     variables = {
-        "input": {
-            "title": title,
-            "contentMarkdown": content,
-            "tags": tags,
-            "publicationId": publication_id
-        }
+    "input": {
+        "title": title,
+        "contentMarkdown": content,
+        "tags": [{"name": tag, "slug": tag.lower().replace(" ", "-")} for tag in tags],
+        "publicationId": publication_id
     }
+}
+
+
 
     response = requests.post(HASHNODE_API_URL, headers=headers, json={
         "query": create_draft_query,
@@ -53,20 +55,23 @@ def publish_new_post(title, content, tags, token, publication_id):
 
     # Step 2: Publish the Draft
     publish_query = """
-    mutation PublishDraft($id: ID!) {
-      publishDraft(id: $id) {
-        post {
-          id
-        }
-      }
+    mutation PublishDraft($input: PublishDraftInput!) {
+  publishDraft(input: $input) {
+    post {
+      id
     }
+  }
+}
+
     """
 
     publish_response = requests.post(HASHNODE_API_URL, headers=headers, json={
         "query": publish_query,
         "variables": {
-            "id": draft_id
+        "input": {
+            "draftId": draft_id
         }
+    }
     })
 
     publish_result = publish_response.json()
@@ -129,6 +134,43 @@ def parse_markdown(filepath):
         'content': content.strip()
     }
 
+def update_existing_post(post_id, title, content, tags, token):
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": token
+    }
+
+    update_query = """
+    mutation UpdatePost($input: UpdatePostInput!) {
+      updatePost(input: $input) {
+        id
+      }
+    }
+    """
+
+    variables = {
+        "input": {
+            "postId": post_id,
+            "title": title,
+            "contentMarkdown": content,
+            "tags": [{"name": tag, "slug": tag.lower().replace(" ", "-")} for tag in tags]
+        }
+    }
+
+    response = requests.post(HASHNODE_API_URL, headers=headers, json={
+        "query": update_query,
+        "variables": variables
+    })
+
+    result = response.json()
+    if 'errors' in result:
+        print("❌ Failed to update post:", result['errors'])
+        return False
+
+    print("✅ Post updated successfully:", result['data']['updatePost']['id'])
+    return True
+
+
 # Example usage
 
 if __name__ == "__main__":
@@ -147,9 +189,17 @@ if __name__ == "__main__":
         print("→ Tags:", blog_data['tags'])
 
         if post_id:
-            print("🟡 Post already exists → will update (we’ll do that in the next step)")
-            continue  # We'll handle updating in the next step
-        else:
+            
+            print("🟡 Post already exists → updating...")
+
+        updated = update_existing_post(
+        post_id=post_id,
+        title=blog_data['title'],
+        content=blog_data['content'],
+        tags=blog_data['tags'],
+        token=HASHNODE_TOKEN
+    )
+    else:
             print("🟢 New post → publishing to Hashnode...")
 
             # Call publish function

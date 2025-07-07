@@ -1,0 +1,32 @@
+name: Hashnode Blog Publisher
+
+on:
+  push:
+    paths:
+      - 'posts/**.md'
+      - 'hashnode-mapping.json'
+      - 'main.py'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ⬇️ Checkout repo
+        uses: actions/checkout@v3
+
+      - name: 🐍 Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: 📦 Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests pyyaml
+
+      - name: 🔐 Run publish script
+        run: python main.py
+        env:
+          HASHNODE_TOKEN: ${{ secrets.HASHNODE_TOKEN }}
+          PUBLICATION_ID: ${{ secrets.PUBLICATION_ID }}
